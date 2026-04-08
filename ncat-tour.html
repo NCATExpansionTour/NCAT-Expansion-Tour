@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>NCAT Expansion — Construction Tour</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{
+  --black:#0a0a0a;--gold:#F0B429;--gold-dim:#C28A00;
+  --gold-bg:rgba(240,180,41,0.10);--gold-border:rgba(240,180,41,0.25);
+  --surface:#161616;--surface2:#1e1e1e;
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.15);
+  --text:#f0f0f0;--text2:#999;--text3:#555;
+  --radius:14px;--radius-sm:9px;
+}
+html,body{background:var(--black);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;max-width:480px;margin:0 auto;overflow-x:hidden;}
+.screen{display:none;min-height:100vh;flex-direction:column;}
+.screen.active{display:flex;}
+
+/* HEADER */
+.hdr{background:var(--black);border-bottom:1px solid var(--border);padding:14px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:20;}
+.hdr-back{background:var(--surface2);border:1px solid var(--border2);color:var(--text);width:36px;height:36px;border-radius:50%;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1;}
+.hdr-title{flex:1;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:17px;letter-spacing:0.02em;text-transform:uppercase;color:var(--text);line-height:1.1;}
+.hdr-title span{display:block;font-size:11px;font-weight:600;color:var(--gold);letter-spacing:0.08em;text-transform:uppercase;}
+.hdr-chip{background:var(--gold);color:var(--black);font-size:10px;font-weight:700;padding:4px 9px;border-radius:20px;letter-spacing:0.05em;text-transform:uppercase;white-space:nowrap;flex-shrink:0;}
+
+/* HERO */
+.hero{background:var(--black);padding:28px 20px 24px;border-bottom:1px solid var(--border);position:relative;overflow:hidden;}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 80% 0%,rgba(240,180,41,0.08) 0%,transparent 65%);pointer-events:none;}
+.hero-eye{font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;}
+.hero h1{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:34px;line-height:1.0;letter-spacing:0.01em;text-transform:uppercase;color:var(--text);margin-bottom:14px;}
+.hero h1 em{color:var(--gold);font-style:normal;}
+.hero-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.h-stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 8px;text-align:center;}
+.h-stat-num{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;color:var(--gold);display:block;}
+.h-stat-label{font-size:10px;color:var(--text2);display:block;margin-top:2px;line-height:1.3;}
+
+/* HOME BODY */
+.home-body{flex:1;padding:20px 16px 32px;}
+.section-label{font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;}
+
+/* FLOOR TABS */
+.floor-tabs{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:4px;gap:4px;margin-bottom:18px;}
+.ftab{flex:1;padding:9px;border:none;border-radius:6px;background:transparent;color:var(--text2);font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;cursor:pointer;transition:all 0.15s;}
+.ftab.active{background:var(--gold);color:var(--black);}
+
+/* STOP CARDS */
+.stop-list{display:flex;flex-direction:column;gap:6px;margin-bottom:24px;}
+.stop-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:13px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:border-color 0.15s,background 0.15s;-webkit-user-select:none;}
+.stop-card:active{background:var(--surface2);border-color:var(--gold-dim);}
+.stop-num{width:34px;height:34px;border-radius:50%;background:var(--gold);color:var(--black);font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.stop-card-content{flex:1;min-width:0;}
+.stop-card-name{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;letter-spacing:0.02em;text-transform:uppercase;color:var(--text);line-height:1.15;margin-bottom:2px;}
+.stop-card-meta{font-size:12px;color:var(--text2);}
+.stop-arrow{color:var(--text3);font-size:20px;font-weight:300;}
+
+.info-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;}
+.info-card h3{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;}
+.info-card p{font-size:13px;line-height:1.65;color:var(--text2);}
+.info-card a{color:var(--gold);text-decoration:none;font-weight:600;}
+
+/* DETAIL */
+.detail-body{flex:1;overflow-y:auto;}
+
+/* GALLERY */
+.gallery{position:relative;width:100%;aspect-ratio:16/9;background:var(--surface);overflow:hidden;}
+.gallery-track{display:flex;height:100%;transition:transform 0.35s cubic-bezier(0.25,0.46,0.45,0.94);will-change:transform;}
+.gallery-slide{flex-shrink:0;width:100%;height:100%;}
+.gallery-slide img{width:100%;height:100%;object-fit:cover;display:block;}
+.gallery-slide.placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;}
+.gallery-ph-icon{width:48px;height:48px;border-radius:50%;background:var(--surface2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:22px;}
+.gallery-ph-text{font-size:12px;color:var(--text3);text-align:center;padding:0 24px;}
+.gallery-dots{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:5px;z-index:5;}
+.gdot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.35);transition:all 0.2s;cursor:pointer;}
+.gdot.active{background:var(--gold);width:16px;border-radius:3px;}
+.garrow{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.45);border:none;color:white;width:32px;height:32px;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:5;}
+.garrow.left{left:10px;}
+.garrow.right{right:10px;}
+.garrow.hidden{display:none;}
+.render-badge{position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,0.6);color:rgba(255,255,255,0.5);font-size:9px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;padding:3px 8px;border-radius:4px;z-index:4;}
+
+/* DETAIL INFO */
+.detail-info{padding:20px 16px 8px;}
+.detail-stop-tag{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+.detail-stop-dot{width:8px;height:8px;border-radius:50%;background:var(--gold);flex-shrink:0;}
+.detail-stop-label{font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);}
+.detail-title{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800;text-transform:uppercase;letter-spacing:0.02em;color:var(--text);line-height:1.05;margin-bottom:6px;}
+.detail-room{font-size:13px;color:var(--text2);margin-bottom:18px;}
+.detail-specs{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:16px;}
+.spec-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:11px 12px;}
+.spec-box-label{font-size:10px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:var(--text3);margin-bottom:3px;}
+.spec-box-val{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;color:var(--text);line-height:1.2;}
+.programs-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px;}
+.prog-tag{background:var(--gold-bg);border:1px solid var(--gold-border);color:var(--gold);font-size:11px;font-weight:600;letter-spacing:0.04em;padding:5px 10px;border-radius:20px;}
+
+/* PROGRESS DOTS */
+.progress-dots{display:flex;justify-content:center;align-items:center;gap:5px;padding:10px 16px 0;flex-wrap:wrap;}
+.pdot{width:5px;height:5px;border-radius:50%;background:var(--border2);transition:all 0.2s;flex-shrink:0;}
+.pdot.active{background:var(--gold);width:14px;border-radius:3px;}
+
+/* BOTTOM NAV */
+.detail-nav{display:flex;gap:8px;padding:12px 16px 24px;border-top:1px solid var(--border);background:var(--black);position:sticky;bottom:0;}
+.nav-btn{flex:1;padding:13px;border-radius:var(--radius-sm);font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;border:none;transition:opacity 0.15s,transform 0.1s;}
+.nav-btn:active{transform:scale(0.97);}
+.nav-btn:disabled{opacity:0.25;cursor:default;transform:none;}
+.nav-btn.prev{background:var(--surface2);border:1px solid var(--border2);color:var(--text);}
+.nav-btn.next{background:var(--gold);color:var(--black);}
+</style>
+</head>
+<body>
+
+<!-- ===== HOME ===== -->
+<div class="screen active" id="screen-home">
+  <div style="background:var(--black);padding:16px 16px 0;display:flex;align-items:center;justify-content:space-between;">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:18px;text-transform:uppercase;letter-spacing:0.04em;color:var(--text);">NCAT Expansion</div>
+    <div class="hdr-chip">Tour Guide</div>
+  </div>
+  <div class="hero">
+    <div class="hero-eye">WSU Tech &middot; Wichita, KS</div>
+    <h1>Your<br><em>Construction</em><br>Tour</h1>
+    <div class="hero-stats">
+      <div class="h-stat"><span class="h-stat-num">85,500</span><span class="h-stat-label">Square Feet</span></div>
+      <div class="h-stat"><span class="h-stat-num">$45M</span><span class="h-stat-label">Investment</span></div>
+      <div class="h-stat"><span class="h-stat-num">Jan '27</span><span class="h-stat-label">First Classes</span></div>
+    </div>
+  </div>
+  <div class="home-body">
+    <div class="section-label" style="margin-bottom:10px;">Browse by Floor</div>
+    <div class="floor-tabs">
+      <button class="ftab active" onclick="switchFloor(1,this)">First Floor</button>
+      <button class="ftab" onclick="switchFloor(2,this)">Second Floor</button>
+    </div>
+    <div class="section-label">Tour Stops</div>
+    <div class="stop-list" id="stop-list"></div>
+    <div class="info-card">
+      <h3>About This Project</h3>
+      <p>Designed by TESSERE and built by Crossland Construction. The NCAT Expansion adds 85,500 SF of training space at WSU Tech's flagship campus, serving an additional 1,450 students annually beginning January 2027.<br><br>
+      <a href="https://wsutech.edu/ncatexpansion/" target="_blank">wsutech.edu/ncatexpansion &rarr;</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== DETAIL ===== -->
+<div class="screen" id="screen-detail">
+  <div class="hdr">
+    <button class="hdr-back" onclick="goHome()">&#8592;</button>
+    <div class="hdr-title"><span id="d-floor-label">First Floor</span>NCAT Expansion</div>
+    <div class="hdr-chip" id="d-stop-chip">1 / 5</div>
+  </div>
+  <div class="detail-body">
+    <div class="gallery" id="d-gallery">
+      <div class="gallery-track" id="d-track"></div>
+      <button class="garrow left" id="g-left" onclick="galleryNav(-1)">&#8249;</button>
+      <button class="garrow right" id="g-right" onclick="galleryNav(1)">&#8250;</button>
+      <div class="gallery-dots" id="g-dots"></div>
+      <div class="render-badge">TESSERE Architecture</div>
+    </div>
+    <div class="detail-info">
+      <div class="detail-stop-tag"><span class="detail-stop-dot"></span><span class="detail-stop-label" id="d-stop-label">Stop 1</span></div>
+      <div class="detail-title" id="d-title">–</div>
+      <div class="detail-room" id="d-room">–</div>
+      <div class="detail-specs" id="d-specs"></div>
+      <div class="programs-row" id="d-programs"></div>
+    </div>
+  </div>
+  <div class="progress-dots" id="d-dots"></div>
+  <div class="detail-nav">
+    <button class="nav-btn prev" id="btn-prev" onclick="navStop(-1)">&#8592; Prev</button>
+    <button class="nav-btn next" id="btn-next" onclick="navStop(1)">Next &#8594;</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// TOUR DATA — edit stop names, rooms, specs, programs, images here.
+// Images must be in the same folder as this HTML file.
+// To add a stop: copy a stop object and add it to the array.
+// floor: 1 = First Floor, floor: 2 = Second Floor
+// ============================================================
+const stops = [
+
+  // ── FIRST FLOOR ──────────────────────────────────────────
+  {
+    floor: 1,
+    name: "Lobby & Welcome Center",
+    room: "Rooms 101 / 102 / 104",
+    sf: "2,159 SF",
+    specs: [
+      {label:"Area", val:"2,159 SF"},
+      {label:"Floor", val:"1st Floor"},
+      {label:"Rooms", val:"101, 102, 104"},
+      {label:"Features", val:"Lobby, Vestibule, Welcome"}
+    ],
+    programs: [],
+    images: ["Lobby.png","Lobby_2.png"]
+  },
+  {
+    floor: 1,
+    name: "Automation & Advanced Manufacturing Microhub",
+    room: "Hall 151 Corridor",
+    sf: "Lab Cluster",
+    specs: [
+      {label:"View", val:"Corridor toward Labs"},
+      {label:"Floor", val:"1st Floor"},
+      {label:"Labs", val:"Controls/PLC, Robotics, Electrical, Mechanical"},
+      {label:"Hall", val:"Room 151"}
+    ],
+    programs: ["Robotics","Controls / PLC","Electrical Systems","SMART Manufacturing"],
+    images: ["Hall_151.png"]
+  },
+  {
+    floor: 1,
+    name: "Cessna + Beechcraft by Textron Aviation Hangar",
+    room: "Room 118",
+    sf: "15,710 SF",
+    specs: [
+      {label:"Area", val:"15,710 SF"},
+      {label:"Floor", val:"1st Floor"},
+      {label:"Room", val:"118"},
+      {label:"Named For", val:"Textron Aviation"}
+    ],
+    programs: ["Pilot Training","AMT Academy","Aviation Maintenance"],
+    images: ["WSU_TECH_Hangar_interior_eye_level.jpg","WSU_TECH_Hangar_interior_eye_level2.jpg"]
+  },
+  {
+    floor: 1,
+    name: "Ideation & Exploration Hall",
+    room: "Room 109",
+    sf: "3,335 SF",
+    specs: [
+      {label:"Area", val:"3,335 SF"},
+      {label:"Floor", val:"1st Floor"},
+      {label:"Room", val:"109"},
+      {label:"Note", val:"Name subject to change"}
+    ],
+    programs: ["Robotics","IoT","Advanced Manufacturing"],
+    images: ["I_I_Hub.png"]
+  },
+  {
+    floor: 1,
+    name: "Flex Lab",
+    room: "Room 106",
+    sf: "2,378 SF",
+    specs: [
+      {label:"Area", val:"2,378 SF"},
+      {label:"Floor", val:"1st Floor"},
+      {label:"Room", val:"106"},
+      {label:"Type", val:"Flexible Instruction Space"}
+    ],
+    programs: ["Multi-Use","Flexible Programming"],
+    images: ["Flex_106.png"]
+  },
+
+  // ── SECOND FLOOR ─────────────────────────────────────────
+  {
+    floor: 2,
+    name: "UAS & Advanced Air Mobility",
+    room: "Rooms 214 / 222",
+    sf: "3,733 SF",
+    specs: [
+      {label:"UAS / Drones Lab", val:"2,210 SF"},
+      {label:"AAM Lab", val:"1,523 SF"},
+      {label:"Floor", val:"2nd Floor"},
+      {label:"Rooms", val:"214, 214A, 222"}
+    ],
+    programs: ["UAS / Drones","Advanced Air Mobility","Emerging Aviation"],
+    images: ["Hall_218A.png","Lobby_2.png"]
+  },
+  {
+    floor: 2,
+    name: "Classrooms & Student Lounges",
+    room: "Rooms 206 / 212 / 207B / 218B",
+    sf: "Multi-Room",
+    specs: [
+      {label:"Classrooms", val:"Rooms 206, 212, 223, 226"},
+      {label:"Student Lounges", val:"Rooms 207B, 218B"},
+      {label:"Floor", val:"2nd Floor"},
+      {label:"Classroom SF", val:"~915–997 SF each"}
+    ],
+    programs: ["General AMT Academy","Aviation Programs","Credit & Non-Credit"],
+    images: ["Class_148_-_Without_Techify.png","Student_Lounge_Screenshot.png"]
+  },
+  {
+    floor: 2,
+    name: "Prefunction",
+    room: "Room 228",
+    sf: "1,274 SF",
+    specs: [
+      {label:"Area", val:"1,274 SF"},
+      {label:"Floor", val:"2nd Floor"},
+      {label:"Room", val:"228"},
+      {label:"Type", val:"Flex / Prefunction"}
+    ],
+    programs: ["Events","Industry Partnerships"],
+    images: ["Prefunction_-_New_.png"]
+  },
+  {
+    floor: 2,
+    name: "Mezzanine",
+    room: "Room 229",
+    sf: "1,026 SF",
+    specs: [
+      {label:"Area", val:"1,026 SF"},
+      {label:"Floor", val:"2nd Floor"},
+      {label:"Room", val:"229"},
+      {label:"View", val:"Overlooks Hangar"}
+    ],
+    programs: ["Observation","Events"],
+    images: ["MEZZANINE.png"]
+  },
+  {
+    floor: 2,
+    name: "Patio",
+    room: "Room 230",
+    sf: "3,373 SF",
+    specs: [
+      {label:"Area", val:"3,373 SF"},
+      {label:"Floor", val:"2nd Floor"},
+      {label:"Room", val:"230"},
+      {label:"Type", val:"Outdoor Terrace"}
+    ],
+    programs: ["Events","Industry Partnerships"],
+    images: ["Patio_Screensshot.png"]
+  },
+  {
+    floor: 2,
+    name: "Executive Boardroom",
+    room: "Room 213",
+    sf: "1,110 SF",
+    specs: [
+      {label:"Area", val:"1,110 SF"},
+      {label:"Floor", val:"2nd Floor"},
+      {label:"Room", val:"213 / 213B"},
+      {label:"Type", val:"Executive Boardroom"}
+    ],
+    programs: ["Industry Partnerships","Donor Events","Advisory Board"],
+    images: ["EXECUTIVE_BOARDROOM_213.png"]
+  },
+  {
+    floor: 2,
+    name: "Tech Bites Market",
+    room: "Room 202",
+    sf: "264 SF",
+    specs: [
+      {label:"Area", val:"264 SF"},
+      {label:"Floor", val:"2nd Floor"},
+      {label:"Room", val:"202"},
+      {label:"Type", val:"Student Lounge / Market"}
+    ],
+    programs: ["Student Services","Campus Life"],
+    images: ["Market.png","Market_2.png"]
+  }
+
+];
+
+let cur = 0;
+let galIdx = 0;
+let floorView = 1;
+
+// ── HOME LIST ──
+function renderList(floor) {
+  const list = document.getElementById('stop-list');
+  list.innerHTML = '';
+  const floorStops = stops.filter(s => s.floor === floor);
+  floorStops.forEach(s => {
+    const globalIdx = stops.indexOf(s);
+    const floorNum = floorStops.indexOf(s) + 1;
+    const d = document.createElement('div');
+    d.className = 'stop-card';
+    d.onclick = () => openStop(globalIdx);
+    d.innerHTML = `
+      <div class="stop-num">${floorNum}</div>
+      <div class="stop-card-content">
+        <div class="stop-card-name">${s.name}</div>
+        <div class="stop-card-meta">${s.room} &middot; ${s.sf}</div>
+      </div>
+      <div class="stop-arrow">&#8250;</div>`;
+    list.appendChild(d);
+  });
+}
+
+function switchFloor(f, btn) {
+  floorView = f;
+  document.querySelectorAll('.ftab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  renderList(f);
+}
+
+// ── NAVIGATION ──
+function openStop(i) {
+  cur = i;
+  galIdx = 0;
+  renderDetail(stops[i], i);
+  document.getElementById('screen-home').classList.remove('active');
+  document.getElementById('screen-detail').classList.add('active');
+}
+
+function goHome() {
+  document.getElementById('screen-detail').classList.remove('active');
+  document.getElementById('screen-home').classList.add('active');
+}
+
+function navStop(dir) {
+  const n = cur + dir;
+  if (n < 0 || n >= stops.length) return;
+  cur = n;
+  galIdx = 0;
+  renderDetail(stops[cur], cur);
+  document.querySelector('.detail-body').scrollTop = 0;
+}
+
+// ── GALLERY ──
+function galleryNav(dir) {
+  const total = stops[cur].images.length;
+  galIdx = Math.max(0, Math.min(total - 1, galIdx + dir));
+  updateGallery(total);
+}
+
+function updateGallery(total) {
+  document.getElementById('d-track').style.transform = `translateX(-${galIdx * 100}%)`;
+  document.getElementById('g-dots').querySelectorAll('.gdot').forEach((d, i) => {
+    d.className = 'gdot' + (i === galIdx ? ' active' : '');
+  });
+  document.getElementById('g-left').className = 'garrow left' + (galIdx === 0 ? ' hidden' : '');
+  document.getElementById('g-right').className = 'garrow right' + (galIdx === total - 1 ? ' hidden' : '');
+}
+
+// ── DETAIL RENDER ──
+function renderDetail(s, i) {
+  const floorStops = stops.filter(x => x.floor === s.floor);
+  const floorPos = floorStops.indexOf(s) + 1;
+  const floorTotal = floorStops.length;
+
+  document.getElementById('d-floor-label').textContent = s.floor === 1 ? 'First Floor' : 'Second Floor';
+  document.getElementById('d-stop-chip').textContent = `${floorPos} / ${floorTotal}`;
+  document.getElementById('d-stop-label').textContent = `Stop ${floorPos}`;
+  document.getElementById('d-title').textContent = s.name;
+  document.getElementById('d-room').textContent = `${s.room} \u00b7 ${s.sf}`;
+
+  // Gallery
+  const track = document.getElementById('d-track');
+  track.innerHTML = '';
+  track.style.transform = 'translateX(0)';
+
+  if (s.images && s.images.length > 0) {
+    s.images.forEach(src => {
+      const slide = document.createElement('div');
+      slide.className = 'gallery-slide';
+      const img = document.createElement('img');
+      img.src = src;
+      img.alt = s.name;
+      slide.appendChild(img);
+      track.appendChild(slide);
+    });
+    const dots = document.getElementById('g-dots');
+    if (s.images.length > 1) {
+      dots.innerHTML = s.images.map((_, j) =>
+        `<div class="gdot${j === 0 ? ' active' : ''}" onclick="galIdx=${j};updateGallery(${s.images.length})"></div>`
+      ).join('');
+      dots.style.display = 'flex';
+    } else {
+      dots.innerHTML = '';
+      dots.style.display = 'none';
+    }
+    updateGallery(s.images.length);
+  } else {
+    const slide = document.createElement('div');
+    slide.className = 'gallery-slide placeholder';
+    slide.innerHTML = `<div class="gallery-ph-icon">&#128444;</div><div class="gallery-ph-text">${s.name}</div>`;
+    track.appendChild(slide);
+    document.getElementById('g-dots').innerHTML = '';
+    document.getElementById('g-left').className = 'garrow left hidden';
+    document.getElementById('g-right').className = 'garrow right hidden';
+  }
+
+  // Specs
+  document.getElementById('d-specs').innerHTML = s.specs.map(sp =>
+    `<div class="spec-box"><div class="spec-box-label">${sp.label}</div><div class="spec-box-val">${sp.val}</div></div>`
+  ).join('');
+
+  // Programs
+  document.getElementById('d-programs').innerHTML = s.programs.map(p =>
+    `<span class="prog-tag">${p}</span>`
+  ).join('');
+
+  // Progress dots — show only current floor stops
+  const floorStops = stops.filter(x => x.floor === s.floor);
+  const floorPos2 = floorStops.indexOf(s);
+  document.getElementById('d-dots').innerHTML = floorStops.map((_, j) =>
+    `<div class="pdot${j === floorPos2 ? ' active' : ''}"></div>`
+  ).join('');
+
+  // Prev/next across full stop array
+  document.getElementById('btn-prev').disabled = i === 0;
+  document.getElementById('btn-next').disabled = i === stops.length - 1;
+}
+
+// ── SWIPE ──
+(function() {
+  let startX = 0;
+  const gallery = document.getElementById('d-gallery');
+  gallery.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, {passive:true});
+  gallery.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - startX;
+    if (Math.abs(dx) > 40) galleryNav(dx < 0 ? 1 : -1);
+  }, {passive:true});
+})();
+
+// Init
+renderList(1);
+</script>
+</body>
+</html>
